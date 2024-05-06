@@ -1,0 +1,9 @@
+{
+    "tickers": [
+        "BTC-USD",
+        "ETH-USD",
+        "LTC-USD",
+        "XRP-USD",
+        "ETC-USD"
+    ]
+}
