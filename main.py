@@ -9,14 +9,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import certifi
 
 
 
 
 # MongoDB connection
 # Create a new client and connect to the server
-uri = "your url here"
-client = MongoClient(uri, server_api=ServerApi('1'))
+uri = "uri"
+client = MongoClient(uri, tlsCAFile = certifi.where())
 # Send a ping to confirm a successful connection
 try:
     client.admin.command('ping')
