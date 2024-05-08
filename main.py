@@ -11,6 +11,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import certifi
 
+from market.overview import market_overview
 from scanner.scanner import crypto_scanner
 
 
@@ -163,14 +164,16 @@ class ScanRequest(BaseModel):
 
 
 @app.post("/symbols/{symbol_type}")
-async def read_vote(request: ScanRequest, symbol_type: str):
+async def scan_symbol(request: ScanRequest, symbol_type: str):
     if symbol_type == "crypto":
         return crypto_scanner(request.tf, request.rsiPeriod, request.rsiMoreThan, request.rsiTheshole)
     else:
         raise HTTPException(status_code=404, detail="Symbol type not found")
 
 
-
+@app.get("/market/overview")
+async def read_vote():
+    return market_overview()
 
 
 @app.get("/")
