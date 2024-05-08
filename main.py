@@ -11,6 +11,8 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import certifi
 
+from scanner.scanner import crypto_scanner
+
 
 
 
@@ -155,13 +157,15 @@ async def login(userLogin: Login):
 
 class ScanRequest(BaseModel):
     tf: str
-    rsi: int
+    rsiPeriod: int
+    rsiMoreThan: bool
+    rsiTheshole: float
 
 
 @app.post("/symbols/{symbol_type}")
 async def read_vote(request: ScanRequest, symbol_type: str):
     if symbol_type == "crypto":
-        return crypto_scanner("1d", request.rsi)
+        return crypto_scanner(request.tf, request.rsiPeriod, request.rsiMoreThan, request.rsiTheshole)
     else:
         raise HTTPException(status_code=404, detail="Symbol type not found")
 
@@ -169,74 +173,6 @@ async def read_vote(request: ScanRequest, symbol_type: str):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ------------------------
-# ========================
-# -------------------------
-
-
-
-class Vote(BaseModel):
-    name: str
-    count: int
-
 @app.get("/")
 async def root():
     return {"message": "hello world"}
-
-# Create
-
-
-@app.post("/votes/")
-async def create_vote(vote: Vote):
-    result = collection.insert_one(vote.dict())
-    return {
-        "id": str(result.inserted_id),
-        "name": vote.name,
-        "count": vote.count
-    }
-
-# Read
-
-
-@app.get("/votes/{vote_id}")
-async def read_vote(vote_id: str):
-    vote = collection.find_one({"_id": ObjectId(vote_id)})
-    if vote:
-        return {"id": str(vote["_id"]), "name": vote["name"], "count": vote["count"]}
-    return HTTPException(status_code=404, detail="Vote not found")
-
-
-# Update
-
-
-@app.put("/votes/{vote_id}")
-async def update_vote(vote_id: str, vote: Vote):
-    result = collection.update_one(
-        {"_id": ObjectId(vote_id)}, {"$set": vote.dict()})
-    if result.modified_count == 1:
-        return {"id": vote_id, "name": vote.name, "count": vote.count}
-    return HTTPException(status_code=404, detail="Vote not found")
-
-# Delete
-
-
-@app.delete("/votes/{vote_id}")
-async def delete_vote(vote_id: str):
-    result = collection.delete_one({"_id": ObjectId(vote_id)})
-    if result.deleted_count == 1:
-        return {"message": "Vote deleted"}
-    return HTTPException(status_code=404, detail="Vote not found")
