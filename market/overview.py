@@ -34,14 +34,13 @@ def market_overview():
     result = pd.concat(dfs).reset_index()
     result['volumeUSD'] = result['volume'].apply(lambda x: f"${x:,.2f}")
     result = result.rename(columns={'Date': 'date', "Symbol": "symbol"})
-    result = result[result["date"].dt.date == (pd.Timestamp.now() - pd.Timedelta(days=1)).date()]
     result = result[["date", "symbol", "open", "close", "percentChange", "volumeChange", "rsi", "volumeUSD"]]
     result["date"] = result["date"].dt.strftime('%Y-%m-%d %H:%M')
-
     result["open"] = result["open"].apply(lambda x: f"{x:.2f}")
     result["close"] = result["close"].apply(lambda x: f"{x:.2f}")
     result["percentChange"] = result["percentChange"].apply(lambda x: f"{x:.2f}")
     result["volumeChange"] = result["volumeChange"].apply(lambda x: f"{x:.2f}")
     result["rsi"] = result["rsi"].apply(lambda x: f"{x:.2f}")
+    result = result.groupby('symbol').apply(lambda x: x.sort_values(by='date', ascending=False).head(1)).reset_index(drop=True)
 
     return JSONResponse(content=result.to_dict(orient="records"))

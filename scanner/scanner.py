@@ -20,7 +20,7 @@ def crypto_scanner(time_frame, rsi_period,rsi_more_than ,rsi_theshole):
             df = df[df['volume'] != 0]
 
             df['percentChange'] = df['close'].pct_change(periods=7) * 100
-            df['volumeChange'] = df['volume'].pct_change(periods=7) * 100    
+            df['volumeChange'] = df['volume'].pct_change(periods=7) * 100
 
             df['%K'] = ta.momentum.stoch(df['high'], df['low'], df['close'])
             df['%D'] = ta.momentum.stoch_signal(df['high'], df['low'], df['close'])
@@ -33,10 +33,12 @@ def crypto_scanner(time_frame, rsi_period,rsi_more_than ,rsi_theshole):
 
     result = pd.concat(dfs).reset_index()
     result['volumeUSD'] = result['volume'].apply(lambda x: f"${x:,.2f}")
-    result = result.rename(columns={'Datetime': 'date', "Symbol": "symbol"})
+
     if time_frame == "1d":
+        result = result.rename(columns={'Date': 'date', "Symbol": "symbol"})
         result = result[result["date"] == str(pd.Timestamp.now().date())]
     elif time_frame == "1h":
+        result = result.rename(columns={'Datetime': 'date', "Symbol": "symbol"})
         result = result[result["date"].apply(lambda x: x.date()) == pd.Timestamp.now().date()]
     result = result[["date", "symbol", "open", "close", "percentChange", "volumeChange", "rsi", "volumeUSD"]]
     result["date"] = result["date"].dt.strftime('%Y-%m-%d %H:%M')
@@ -46,11 +48,12 @@ def crypto_scanner(time_frame, rsi_period,rsi_more_than ,rsi_theshole):
     result["percentChange"] = result["percentChange"].apply(lambda x: f"{x:.2f}")
     result["volumeChange"] = result["volumeChange"].apply(lambda x: f"{x:.2f}")
     result["rsi"] = result["rsi"].apply(lambda x: f"{x:.2f}")
+    result["symbol"] = result["symbol"].str.replace("-", "")
 
     if rsi_more_than:
         result = result[result["rsi"].astype(float) > rsi_theshole]
     else:
         result = result[result["rsi"].astype(float) < rsi_theshole]
-
+    result = result.groupby('symbol').apply(lambda x: x.sort_values(by='date', ascending=False).head(1)).reset_index(drop=True)
 
     return JSONResponse(content=result.to_dict(orient="records"))
