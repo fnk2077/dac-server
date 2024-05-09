@@ -5,7 +5,7 @@ import ta
 
 
 def crypto_scanner(time_frame, rsi_period,rsi_more_than ,rsi_theshole):
-    print(time_frame, rsi_period, rsi_more_than, rsi_theshole)
+    # print(time_frame, rsi_period, rsi_more_than, rsi_theshole)
     tickers = pd.read_json("symbols/crypto_symbols.json")["tickers"].tolist()
     start_dt = pd.Timestamp.now() - pd.DateOffset(months=3)
     end_dt = pd.Timestamp.now()
